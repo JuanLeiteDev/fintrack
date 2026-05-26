@@ -1,5 +1,8 @@
 import { form_validate } from "./validate.js";
 
+const TYPES = ['receita', 'despesa'];
+const FIELDS = ['description', 'amount', 'type', 'category', 'date']
+
 // ================ ELEMENTS ================
 const elements = {
     form: document.querySelector('#transactionForm'),
@@ -31,14 +34,30 @@ function save_form(event){
 
     if(errors){
         event.preventDefault();
-        for(let field in errors){
-            alert(errors[field])
+        for(let error in errors){
+            const nextElement = elements[error].nextElementSibling
+            if(!nextElement){
+                const newElement = document.createElement('p');
+                newElement.classList.add('error');
+                newElement.innerText = errors[error]
+                elements[error].after(newElement);
+            }
+            elements[error].classList.add('input-error');
         }
     } else {
-        alert("ok");
+        alert("ok")
     }
 }
 
-
 // ================ EVENTS ================
 elements.form.addEventListener("submit", save_form);
+
+FIELDS.forEach(field => {
+    let btnInput = document.querySelector(`#${field}`)
+    btnInput.addEventListener('input', () => {
+        if(btnInput.classList.contains('input-error')){
+            btnInput.classList.remove('input-error');
+            btnInput.nextElementSibling.remove()
+        }
+    })
+})
