@@ -43,6 +43,10 @@
     gap: 12px;
 }
 
+.section-actions a {
+    text-decoration: none;
+}
+
 /* Dashboard */
 
 .dashboard-summary {
@@ -280,6 +284,11 @@
     }
 
     .section-actions button {
+        flex: 1;
+    }
+
+    .section-actions a {
+        text-decoration: none;
         flex: 1;
     }
 
