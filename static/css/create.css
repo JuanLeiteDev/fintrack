@@ -66,6 +66,16 @@
     padding-top: 8px;
 }
 
+.input-error {
+    border: 2px solid var(--danger) !important;
+}
+
+p.error {
+    font-size: 1rem;
+    margin: 0 0 5px;
+    color: var(--danger);
+}
+
 @media screen and (max-width: 600px) {
     .create-transaction-section {
         margin-bottom: 48px;
