@@ -2,6 +2,7 @@ import database
 
 from flask import Flask, render_template, jsonify, request
 from datetime import datetime
+import math
 
 app = Flask(__name__)
 database.init_db()
@@ -17,7 +18,7 @@ def home():
 
 @app.route('/api/transaction', methods=["POST"])
 def create():
-    transaction = request.get_json()
+    transaction = request.get_json(silent=True)
     errors, data = transaction_validate(transaction)
     if not errors:
         new_transaction = database.create_transaction(data)
@@ -30,7 +31,7 @@ def create():
         else:
             response = {
                 "sucesse": False,
-                "body": [{"database": "Erro ao inserir na base de dados."}]
+                "body": [{"form": "Erro ao inserir na base de dados."}]
             }
     else:
         response = {
@@ -43,22 +44,35 @@ def create():
 @app.route('/api/transaction', methods=["GET"])
 def read_all():
     transactions = database.list_transactions()
-    if not transactions: return jsonify({"sucesse": False, "message": "Não existe transações"}), 400
-    else: return jsonify({"sucesse": True, "body": transactions}), 200
+    return jsonify({"sucesse": True, "body": transactions}), 200
 
 @app.route('/api/transaction/<int:id>', methods=["GET"])
 def read_one(id):
-    pass
+    transaction = database.get_transaction(id)
+    if transaction:
+        return jsonify({"sucesse": True, "body": transaction}), 200
+    return jsonify({"sucesse": False, "id": id, "message": "Transação não encontrada."}), 404
 
 @app.route('/api/transaction/<int:id>', methods=["PUT"])
 def update(id):
-    pass
+    transaction = request.get_json(silent=True)
+    errors, data = transaction_validate(transaction)
+    if errors:
+        response = {
+            "sucesse": False,
+            "body": [{key: value} for key, value in errors.items()]
+        }
+        return jsonify(response), 422
+
+    updated_transaction = database.update_transaction(id, data)
+    if updated_transaction:
+        return jsonify({"sucesse": True, "body": updated_transaction}), 200
+    return jsonify({"sucesse": False, "id": id, "message": "Transação não encontrada."}), 404
 
 @app.route('/api/transaction/<int:id>', methods=["DELETE"])
 def delete_transaction(id):
-    id = int(id)
     if database.delete_transaction(id): return jsonify({"sucesse": True, "id": id}), 200
-    else: return jsonify({"sucesse": False, "id": id}), 400
+    else: return jsonify({"sucesse": False, "id": id, "message": "Transação não encontrada."}), 404
 
 
 # ======================= FUNÇÕES AUXILIARES =======================
@@ -67,41 +81,54 @@ def transaction_validate(transaction: dict):
     errors = {}
 
     if not transaction: 
-        errors["outros"] = "Transação não pode ser nula."
+        errors["form"] = "Transação não pode ser nula."
         return errors, {}
     
     if not isinstance(transaction, dict):
-        errors["outros"] = "Transação passada por argumento não corresponde a um dict."
+        errors["form"] = "Transação passada por argumento não corresponde a um dict."
         return errors, {}
     
-    description = str(transaction.get("description", ""))
-    if not description: errors["description"] = "Descrição não pode ser nula."
-    elif len(description.strip()) > 50: errors["description"] = "Descrição não pode ter mais de 50 caracteres."
-    else: description = description.strip()
+    description = transaction.get("description")
+    if description is None:
+        errors["description"] = "Descrição não pode ser nula."
+    else:
+        description = str(description).strip()
+        if not description: errors["description"] = "Descrição não pode ser nula."
+        elif len(description) > 50: errors["description"] = "Descrição não pode ter mais de 50 caracteres."
 
-    amount = str(transaction.get("amount", ""))
-    if not amount: errors["amount"] = "Valor não pode ser nulo."
+    amount = transaction.get("amount")
+    if amount is None or str(amount).strip() == "":
+        errors["amount"] = "Valor não pode ser nulo."
     else:
         try:
             amount = round(float(amount), 2)
-            if amount <= 0: errors["amount"] = "Valor não pode ser menor ou igual a 0."
-        except ValueError:
+            if not math.isfinite(amount) or amount <= 0:
+                errors["amount"] = "Valor não pode ser menor ou igual a 0."
+        except (TypeError, ValueError):
             errors["amount"] = "Valor inválido."
 
-    type_field = str(transaction.get("type", ""))
-    if not type_field: errors["type"] = "Tipo não pode ser nulo."
-    elif type_field.strip().lower() not in TYPES: errors["type"] = "Tipo inválido."
-    else: type_field = type_field.strip().lower()
+    type_field = transaction.get("type")
+    if type_field is None:
+        errors["type"] = "Tipo não pode ser nulo."
+    else:
+        type_field = str(type_field).strip().lower()
+        if not type_field: errors["type"] = "Tipo não pode ser nulo."
+        elif type_field not in TYPES: errors["type"] = "Tipo inválido."
 
-    category = str(transaction.get("category", ""))
-    if not category: errors["category"] = "Categoria não pode ser nula."
-    elif len(category.strip()) > 50: errors["category"] = "Categoria não pode ter mais de 50 caracteres."
-    else: category = category.strip()
+    category = transaction.get("category")
+    if category is None:
+        errors["category"] = "Categoria não pode ser nula."
+    else:
+        category = str(category).strip()
+        if not category: errors["category"] = "Categoria não pode ser nula."
+        elif len(category) > 50: errors["category"] = "Categoria não pode ter mais de 50 caracteres."
 
-    date = str(transaction.get("date", ""))
-    if not date: errors["date"] = "Data não pode ser nula."
+    date = transaction.get("date")
+    if date is None or str(date).strip() == "":
+        errors["date"] = "Data não pode ser nula."
     else:
         try:
+            date = str(date).strip()
             date = datetime.strptime(date, "%Y-%m-%d").strftime("%Y-%m-%d")
         except ValueError:
             errors["date"] = "Formato da data está inválido."

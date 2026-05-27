@@ -17,7 +17,7 @@ const elements = {
     category: document.querySelector('select#category'),
     date: document.querySelector('input#date'),
     transactionsList: document.querySelector('.transactions-list'),
-    filter: document.querySelector('.section-actions#filter'),
+    filter: document.querySelector('#filter'),
     inform: document.querySelector('#inform'),
     btnCancel: document.querySelector('#btn-cancel'),
     btnConfirm: document.querySelector('#btn-confirm'),
@@ -39,7 +39,7 @@ function cancelTimeout() {
     clearTimeout(elements.timer);
 }
 
-function showInform(msg, buttons=false){
+function showInform(msg, buttons=false, error=false){
     cancelTimeout()
 
     if(elements.inform.classList.contains('inform-ocult')){
@@ -51,8 +51,9 @@ function showInform(msg, buttons=false){
     if(msgElement) msgElement.innerText = msg;
 
     if(!buttons){
-        elements.inform.style.borderColor = "var(--success)"
-        msgElement.style.color = "var(--success)"
+        const color = error ? "var(--danger)" : "var(--success)";
+        elements.inform.style.borderColor = color
+        msgElement.style.color = color
         buttonsBox.style.display = "none";
         initTimeout()
     } else {
@@ -72,30 +73,53 @@ function readForm(){
     };
 }
 
+function escapeHtml(value){
+    const element = document.createElement('span');
+    element.textContent = String(value ?? "");
+    return element.innerHTML;
+}
+
 function showErrors(errors){
+    if(!Array.isArray(errors)){
+        showInform("Erro ao tentar processar os dados.", false, true);
+        return
+    }
+
     for(const error of errors){
         const key = Object.keys(error)[0];
         const value = Object.values(error)[0];
+        const field = elements[key];
+
+        if(!field){
+            showInform(value, false, true);
+            continue
+        }
         
-        const nextElement = elements[key].nextElementSibling;
-        if(!nextElement){
+        const nextElement = field.nextElementSibling;
+        if(!nextElement || !nextElement.classList.contains('error')){
             const newElement = document.createElement('p');
             newElement.classList.add('error');
             newElement.innerText = value;
-            elements[key].after(newElement);
+            field.after(newElement);
+        } else {
+            nextElement.innerText = value;
         }
-        elements[key].classList.add('input-error');
+        field.classList.add('input-error');
     }
 }
 
 function formatTransaction(transaction){
+    const amount = Number(transaction.amount);
+    const category = String(transaction.category ?? "");
+    const date = String(transaction.date ?? "");
+
     return {
         id: transaction.id,
-        description: transaction.description,
-        amount: String(transaction.amount.toFixed(2)).replace(".", ","),
-        type: transaction.type,
-        category: transaction.category.charAt(0).toUpperCase() + transaction.category.slice(1),
-        date: transaction.date.split('-').reverse().join('/')
+        description: String(transaction.description ?? ""),
+        amount: Number.isFinite(amount) ? amount.toFixed(2).replace(".", ",") : "0,00",
+        type: String(transaction.type ?? ""),
+        category: category.charAt(0).toUpperCase() + category.slice(1),
+        date: date.includes("-") ? date.split('-').reverse().join('/') : date
     }
 }
 
@@ -114,7 +138,7 @@ async function saveForm(event){
             showInform(MESSAGES[0]);
             updateTransactions(formatTransaction(newData.body));
         } else {
-            showErrors(newData.body);
+            showErrors(newData.body ?? [{form: newData.message ?? "Erro ao salvar transação."}]);
         }
     }
 }
@@ -122,14 +146,17 @@ async function saveForm(event){
 async function showTransactions(){
     const response = await api.loadTransactions()
     if(response.sucesse){
-        const transactions = response.body
-        if(Array(transactions).length > 0){
+        const transactions = response.body ?? []
+        if(Array.isArray(transactions) && transactions.length > 0){
             transactions.forEach(transaction => {
                 updateTransactions(formatTransaction(transaction))
             })
+        } else {
+            emptyList()
         }
     } else {
         emptyList()
+        if(response.message) showInform(response.message, false, true)
     }
 }
 
@@ -145,12 +172,12 @@ function updateTransactions(newTransaction){
     newArticle.innerHTML = 
     `
         <div class="transaction-info">
-            <h3>${newTransaction.description}</h3>
-            <p>${isIncome ? "Receita":"Despesa"} • ${newTransaction.category} • ${newTransaction.date}</p>
+            <h3>${escapeHtml(newTransaction.description)}</h3>
+            <p>${isIncome ? "Receita":"Despesa"} • ${escapeHtml(newTransaction.category)} • ${escapeHtml(newTransaction.date)}</p>
         </div>
 
         <div class="transaction-value ${isIncome ? "income":"expense"}">
-            <strong>${isIncome ? "+":"-"} € ${newTransaction.amount}</strong>
+            <strong>${isIncome ? "+":"-"} € ${escapeHtml(newTransaction.amount)}</strong>
         </div>
 
         <div class="transaction-actions">
@@ -169,6 +196,10 @@ function updateTransactions(newTransaction){
         elements.currentTransaction = newArticle
         showInform("Deseja apagar essa transação?", true);
     });
+
+    btnEdit.addEventListener('click', () => {
+        showInform("Edição ainda não implementada.", false, true);
+    });
 }
 
 function emptyList(empty=true){
@@ -185,13 +216,16 @@ FIELDS.forEach(field => {
     btnInput.addEventListener('input', () => {
         if(btnInput.classList.contains('input-error')){
             btnInput.classList.remove('input-error');
-            btnInput.nextElementSibling.remove()
+            if(btnInput.nextElementSibling?.classList.contains('error')){
+                btnInput.nextElementSibling.remove()
+            }
         }
     })
 })
 
 elements.btnCancel.addEventListener('click', () => {
     elements.inform.classList.add('inform-ocult');
+    elements.currentTransaction = null;
 })
 
 elements.btnConfirm.addEventListener('click', async () => {
@@ -204,10 +238,10 @@ elements.btnConfirm.addEventListener('click', async () => {
             elements.countTransaction--;
             if(elements.countTransaction <= 0) emptyList()
         } else {
-            showInform("Erro ao tentar apagar uma transação.");
+            showInform("Erro ao tentar apagar uma transação.", false, true);
         }
     } else {
-        showInform("Nenhuma transação informada.")
+        showInform("Nenhuma transação informada.", false, true)
     }
 })
 

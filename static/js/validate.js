@@ -31,6 +31,8 @@ export function formValidate(data){
 
     if(!data.category || !data.category.trim()) {
         errors["category"] = "Campo categoria não pode ser nulo.";
+    } else if(data.category.trim().length > 50) {
+        errors["category"] = "Campo categoria pode conter no máximo 50 caracteres.";
     }
 
     if(!data.date || !data.date.trim()) {

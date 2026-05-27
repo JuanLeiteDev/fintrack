@@ -1,31 +1,59 @@
 const API_BASE = '/api';
 const HEADER = {"Content-type": "application/json"}
 
-export async function loadTransactions() {
-    const response = await fetch(`${API_BASE}/transaction`, {
-        method: "GET",
-        headers: HEADER
-    });
+async function parseResponse(response){
+    let data;
 
-    return await response.json()
+    try {
+        data = await response.json()
+    } catch {
+        data = {sucesse: false, message: "Resposta inválida do servidor."}
+    }
+
+    if(!response.ok){
+        data.sucesse = false;
+    }
+
+    return data;
+}
+
+export async function loadTransactions() {
+    try {
+        const response = await fetch(`${API_BASE}/transaction`, {
+            method: "GET",
+            headers: HEADER
+        });
+
+        return await parseResponse(response)
+    } catch {
+        return {sucesse: false, body: [], message: "Erro de conexão com o servidor."}
+    }
 }
 
 export async function sendNewTransaction(data){
-    const response = await fetch(`${API_BASE}/transaction`, {
-        method: "POST",
-        headers: HEADER,
-        body: JSON.stringify(data)
-        }
-    );
+    try {
+        const response = await fetch(`${API_BASE}/transaction`, {
+            method: "POST",
+            headers: HEADER,
+            body: JSON.stringify(data)
+            }
+        );
 
-    return await response.json();
+        return await parseResponse(response);
+    } catch {
+        return {sucesse: false, body: [{form: "Erro de conexão com o servidor."}]}
+    }
 }
 
 export async function deleteTransaction(id) {
-    const response = await fetch(`${API_BASE}/transaction/${id}`, {
-        method: "DELETE",
-        headers: HEADER
-    })
+    try {
+        const response = await fetch(`${API_BASE}/transaction/${id}`, {
+            method: "DELETE",
+            headers: HEADER
+        })
 
-    return await response.json()
+        return await parseResponse(response)
+    } catch {
+        return {sucesse: false, message: "Erro de conexão com o servidor."}
+    }
 }

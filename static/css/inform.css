@@ -21,7 +21,7 @@ div#inform {
     gap: 5px;
 }
 
-div#informa > p {
+div#inform > p {
     color: var(--success);
     font-size: 1rem;
     user-select: none;
