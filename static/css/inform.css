@@ -1,0 +1,69 @@
+aside.inform {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    z-index: 100;
+}
+
+div#inform {
+    width: clamp(300px, 70vw, 80vw);
+    padding: 20px;
+    margin: 20px;
+    border-radius: 10px;
+    background-color: var(--bg-card);
+    border: 1px solid var(--success);
+    transition: transform 300ms ease;
+    gap: 5px;
+}
+
+div#informa > p {
+    color: var(--success);
+    font-size: 1rem;
+    user-select: none;
+}
+
+.inform-ocult {
+    transform: translateY(-150px);
+}
+
+#confirm-box {
+    display: flex;
+    justify-content: end;
+    align-items: center;
+    gap: 10px;
+}
+
+.btn-notify {
+    cursor: pointer;
+    font-size: 0.95rem;
+    border-radius: 8px;
+    padding: 10px 16px;
+    transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease;
+}
+
+#btn-confirm {
+    background-color: var(--danger);
+    color: var(--button-text);
+    border: 1px solid var(--button-text);
+}
+
+#btn-confirm:hover {
+    background-color: #811a1a;
+    color: var(--button-text);
+    border: 1px solid var(--button-text);
+}
+
+#btn-cancel {
+    background-color: var(--button-secondary-bg);
+    color: var(--button-secondary-text);
+    border: 1px solid var(--button-secondary-text);
+}
+
+#btn-cancel:hover {
+    background-color: #ccd2d4;
+}

@@ -4,15 +4,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/header.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/inform.css')}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css')}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css')}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css')}}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/transaction.css')}}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/transactions.css')}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/create.css')}}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css')}}">
     <title>{% block title %}{% endblock title %}</title>
 </head>
 <body>
+    <aside class="inform">
+        {% block inform %}
+        {% endblock inform %}
+    </aside>
     <header class="header">
         {% block header %}
         {% endblock header %}
