@@ -203,8 +203,13 @@ function updateTransactions(newTransaction){
 }
 
 function emptyList(empty=true){
-    if(empty) elements.transactionsList.closest('#transactions').style.display = "none"
-    else elements.transactionsList.closest('#transactions').style.display = "block"
+
+    if(empty){
+        elements.transactionsList.innerHTML = '<p class="empty-transactions">Nenhuma transação cadastrada.</p>'
+    } else {
+        const emptyMessage = elements.transactionsList.querySelector('.empty-transactions');
+        if(emptyMessage) emptyMessage.remove()
+    }
 }
 
 

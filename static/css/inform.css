@@ -8,6 +8,7 @@ aside.inform {
     left: 0;
     width: 100vw;
     z-index: 100;
+    pointer-events: none;
 }
 
 div#inform {
@@ -19,6 +20,7 @@ div#inform {
     border: 1px solid var(--success);
     transition: transform 300ms ease;
     gap: 5px;
+    pointer-events: auto;
 }
 
 div#inform > p {
@@ -29,9 +31,11 @@ div#inform > p {
 
 .inform-ocult {
     transform: translateY(-150px);
+    pointer-events: none;
 }
 
 #confirm-box {
+    margin-top: 10px;
     display: flex;
     justify-content: end;
     align-items: center;
@@ -66,4 +70,14 @@ div#inform > p {
 
 #btn-cancel:hover {
     background-color: #ccd2d4;
+}
+
+@media screen and (max-width: 500px) {
+    #confirm-box {
+        justify-content: center;
+    }
+
+    .btn-notify {
+        padding: 8px 14px;
+    }
 }
