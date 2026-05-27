@@ -1,6 +1,6 @@
 const TYPES = ["receita", "despesa"];
 
-export function form_validate(data){
+export function formValidate(data){
     const errors = {};
 
     if(!data) {
@@ -37,5 +37,6 @@ export function form_validate(data){
         errors["date"] = "Campo data não pode ser nulo.";
     }
 
-    return Object.keys(errors).length > 0 ? errors : null;
+    if(Object.keys(errors).length > 0) return Object.entries(errors).map(([key, value]) => ({[key]: value}))
+    else return null
 }
