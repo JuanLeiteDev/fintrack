@@ -15,25 +15,50 @@ TYPES = ('receita', 'despesa',)
 def home():
     return render_template("index.html")
 
-@app.route('/transacoes', methods=["POST"])
+@app.route('/api/transaction', methods=["POST"])
 def create():
-    pass
+    transaction = request.get_json()
+    errors, data = transaction_validate(transaction)
+    if not errors:
+        new_transaction = database.create_transaction(data)
+        if new_transaction:
+            response = {
+                "sucesse": True,
+                "body": new_transaction
+            }
+            return jsonify(response), 201
+        else:
+            response = {
+                "sucesse": False,
+                "body": [{"database": "Erro ao inserir na base de dados."}]
+            }
+    else:
+        response = {
+            "sucesse": False,
+            "body": [{key: value} for key, value in errors.items()]
+        }
 
-@app.route('/transacoes', methods=["GET"])
+    return jsonify(response), 422
+
+@app.route('/api/transaction', methods=["GET"])
 def read_all():
-    pass
+    transactions = database.list_transactions()
+    if not transactions: return jsonify({"sucesse": False, "message": "Não existe transações"}), 400
+    else: return jsonify({"sucesse": True, "body": transactions}), 200
 
-@app.route('/transacoes/<int:id>', methods=["GET"])
+@app.route('/api/transaction/<int:id>', methods=["GET"])
 def read_one(id):
     pass
 
-@app.route('/transacoes/<int:id>', methods=["PUT"])
+@app.route('/api/transaction/<int:id>', methods=["PUT"])
 def update(id):
     pass
 
-@app.route('/transacoes/<int:id>', methods=["DELETE"])
+@app.route('/api/transaction/<int:id>', methods=["DELETE"])
 def delete_transaction(id):
-    pass
+    id = int(id)
+    if database.delete_transaction(id): return jsonify({"sucesse": True, "id": id}), 200
+    else: return jsonify({"sucesse": False, "id": id}), 400
 
 
 # ======================= FUNÇÕES AUXILIARES =======================

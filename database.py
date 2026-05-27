@@ -89,7 +89,7 @@ def delete_transaction(id: int) -> bool:
     cursor = connection.cursor()
 
     try:
-        cursor.execute("DELETE FROM transaction WHERE id = (?);", (id,))
+        cursor.execute("DELETE FROM transactions WHERE id = (?);", (id,))
 
         connection.commit()
         return cursor.rowcount > 0
