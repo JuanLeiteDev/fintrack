@@ -5,11 +5,13 @@ const TYPES = ['receita', 'despesa'];
 const FIELDS = ['description', 'amount', 'type', 'category', 'date']
 const MESSAGES = [
     "Transação criada com sucesso!",
+    "Transação atualizada com sucesso!"
 ]
 
 // ================ ELEMENTS ================
 const elements = {
     form: document.querySelector('#transactionForm'),
+    titleForm: document.querySelector('#create-transaction > div.section-header > div > h2'),
     btnSubmit: document.querySelector('#submit-form'),
     description: document.querySelector('input#description'),
     amount: document.querySelector('input#amount'),
@@ -22,6 +24,7 @@ const elements = {
     btnCancel: document.querySelector('#btn-cancel'),
     btnConfirm: document.querySelector('#btn-confirm'),
     currentTransaction: null,
+    editingTransaction: null,
     timer: null,
     countTransaction: 0
 }
@@ -132,13 +135,30 @@ async function saveForm(event){
     if(errors){
         showErrors(errors);
     } else {
-        const newData = await api.sendNewTransaction(dataForm);
-        if(newData.sucesse){
-            elements.form.reset();
-            showInform(MESSAGES[0]);
-            updateTransactions(formatTransaction(newData.body));
+        if(elements.editingTransaction != null){
+            const updatedTransaction = await api.updateExistingTransaction(dataForm, elements.currentTransaction.dataset.id);
+            if(updatedTransaction.sucesse){
+                elements.currentTransaction.remove();
+                showInform(MESSAGES[1], false, false);
+                updateTransactions(formatTransaction(updatedTransaction.body));
+            } else {
+                showInform(updatedTransaction.message, false, true);
+            }
+
+            elements.form.reset()
+            elements.btnSubmit.innerText = "Salvar transação";
+            elements.titleForm.innerText = "Cria nova transação"
+            elements.editingTransaction = null;
+            elements.currentTransaction = null;
         } else {
-            showErrors(newData.body ?? [{form: newData.message ?? "Erro ao salvar transação."}]);
+            const newData = await api.sendNewTransaction(dataForm);
+            if(newData.sucesse){
+                elements.form.reset();
+                showInform(MESSAGES[0]);
+                updateTransactions(formatTransaction(newData.body));
+            } else {
+                showErrors(newData.body ?? [{form: newData.message ?? "Erro ao salvar transação."}]);
+            }
         }
     }
 }
@@ -193,17 +213,31 @@ function updateTransactions(newTransaction){
     const btnEdit = newArticle.querySelector('.edit');
 
     btnDelete.addEventListener('click', () => {
-        elements.currentTransaction = newArticle
+        elements.currentTransaction = newArticle;
         showInform("Deseja apagar essa transação?", true);
     });
 
     btnEdit.addEventListener('click', () => {
-        showInform("Edição ainda não implementada.", false, true);
+        elements.currentTransaction = newArticle;
+        elements.editingTransaction = newTransaction;
+        updateOne();
     });
 }
 
-function emptyList(empty=true){
+function updateOne(){
+    elements.form.reset()
+    elements.description.value = elements.editingTransaction.description;
+    elements.amount.value = elements.editingTransaction.amount.replace(",", ".");
+    elements.type.value = elements.editingTransaction.type;
+    elements.category.value = elements.editingTransaction.category;
+    elements.date.value = elements.editingTransaction.date.split("/").reverse().join("-");
+    elements.btnSubmit.innerText = "Atualizar transação";
+    elements.titleForm.innerText = "Atualizar transação existente"
 
+    document.querySelector('#create-transaction').scrollIntoView({ behavior: 'smooth' });
+}
+
+function emptyList(empty=true){
     if(empty){
         elements.transactionsList.innerHTML = '<p class="empty-transactions">Nenhuma transação cadastrada.</p>'
     } else {

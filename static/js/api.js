@@ -57,3 +57,17 @@ export async function deleteTransaction(id) {
         return {sucesse: false, message: "Erro de conexão com o servidor."}
     }
 }
+
+export async function updateExistingTransaction(data, id){
+    try {
+        const response = await fetch(`${API_BASE}/transaction/${id}`, {
+            method: "PUT",
+            headers: HEADER,
+            body: JSON.stringify(data)
+        })
+    
+        return await parseResponse(response) 
+    } catch (error) {
+        return {sucesse: false, message: "Erro de conexão com o servidor."}
+    }
+}
