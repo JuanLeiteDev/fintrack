@@ -1,10 +1,10 @@
 const TYPES = ["receita", "despesa"];
 
-export function form_validate(data){
+export function formValidate(data){
     const errors = {};
 
     if(!data) {
-        return { other: "A transação não pode ter campos nulos." };
+        return { form: "A transação não pode ter campos nulos." };
     }
 
     if(!data.description || !data.description.trim()){
@@ -14,7 +14,7 @@ export function form_validate(data){
     }
 
     const amount = Number(data.amount);
-
+    
     if(data.amount === null || data.amount.trim() === "") {
         errors["amount"] = "Campo valor não pode ser nulo.";
     } else if(Number.isNaN(amount)) {
@@ -31,11 +31,14 @@ export function form_validate(data){
 
     if(!data.category || !data.category.trim()) {
         errors["category"] = "Campo categoria não pode ser nulo.";
+    } else if(data.category.trim().length > 50) {
+        errors["category"] = "Campo categoria pode conter no máximo 50 caracteres.";
     }
 
     if(!data.date || !data.date.trim()) {
         errors["date"] = "Campo data não pode ser nulo.";
     }
 
-    return Object.keys(errors).length > 0 ? errors : null;
+    if(Object.keys(errors).length > 0) return Object.entries(errors).map(([key, value]) => ({[key]: value}))
+    else return null
 }

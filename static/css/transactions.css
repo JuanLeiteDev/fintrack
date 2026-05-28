@@ -12,6 +12,14 @@
     gap: 14px;
 }
 
+.empty-transactions {
+    color: var(--text-secondary);
+    background-color: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 20px;
+}
+
 .transaction-item {
     background-color: var(--bg-card);
     border: 1px solid var(--border);

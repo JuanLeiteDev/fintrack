@@ -34,7 +34,7 @@ def init_db():
     finally:
         connection.close()
 
-def list_transactions() -> None | list[dict]:
+def list_transactions() -> list[dict]:
     connection = get_connection()
     cursor = connection.cursor()
 
@@ -42,8 +42,7 @@ def list_transactions() -> None | list[dict]:
         cursor.execute("SELECT * FROM transactions;")
         lines = cursor.fetchall()
 
-        if not lines: return None
-        else: return [dict(line) for line in lines]
+        return [dict(line) for line in lines]
 
     finally:
         connection.close()
@@ -77,7 +76,10 @@ def update_transaction(id: int, new: dict) -> None | dict:
         
         connection.commit()
 
-        cursor.execute("SELECT * FROM transactions WHERE id = (?);", (cursor.lastrowid,))
+        if cursor.rowcount == 0:
+            return None
+
+        cursor.execute("SELECT * FROM transactions WHERE id = (?);", (id,))
         new_transaction = cursor.fetchone()
         if not new_transaction: return None
         else: return dict(new_transaction)
@@ -89,7 +91,7 @@ def delete_transaction(id: int) -> bool:
     cursor = connection.cursor()
 
     try:
-        cursor.execute("DELETE FROM transaction WHERE id = (?);", (id,))
+        cursor.execute("DELETE FROM transactions WHERE id = (?);", (id,))
 
         connection.commit()
         return cursor.rowcount > 0
