@@ -70,6 +70,137 @@
     gap: 10px;
 }
 
+/* TELA DE FILTROS */
+.filters-panel {
+    margin-top: 1rem;
+    margin-bottom: 1.25rem;
+    padding: 1.25rem;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(16, 32, 39, 0.06);
+
+    opacity: 1;
+    max-height: 700px;
+    transform: translateY(0);
+    overflow: hidden;
+    visibility: visible;
+
+    transition:
+        opacity 0.25s ease,
+        max-height 0.35s ease,
+        transform 0.25s ease,
+        visibility 0.25s ease,
+        margin 0.25s ease,
+        padding 0.25s ease,
+        border 0.25s ease;
+}
+
+.filters-panel.hidden {
+    opacity: 0;
+    max-height: 0;
+    transform: translateY(-8px);
+    visibility: hidden;
+
+    margin-top: 0;
+    margin-bottom: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    border-width: 0;
+}
+
+.filters-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--divider);
+}
+
+.filters-header h3 {
+    margin: 0;
+    color: var(--text-main);
+    font-size: 1.05rem;
+    font-weight: 700;
+}
+
+.filters-header p {
+    margin: 0.25rem 0 0;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.filters-close {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: var(--bg-muted);
+    color: var(--text-secondary);
+    font-size: 1.4rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: 0.2s ease;
+}
+
+.filters-close:hover {
+    background: var(--primary);
+    color: #fff;
+}
+
+.filters-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+}
+
+.filter-group label {
+    color: var(--text-secondary);
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.filter-group input,
+.filter-group select {
+    width: 100%;
+    padding: 0.75rem 0.85rem;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-main);
+    color: var(--text-main);
+    font-size: 0.95rem;
+    outline: none;
+    transition: 0.2s ease;
+}
+
+.filter-group input::placeholder {
+    color: var(--text-muted);
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+    border-color: var(--primary);
+    background: var(--bg-card);
+    box-shadow: 0 0 0 3px rgba(22, 59, 77, 0.12);
+}
+
+.filters-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--divider);
+}
+
+/* Responsivo */
 @media screen and (max-width: 900px) {
     #diferente {
         flex-direction: column;
@@ -89,11 +220,34 @@
     .transaction-actions button {
         flex: 1;
     }
+    .filters-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
 }
 
 @media screen and (max-width: 600px) {
     .transactions-section {
         margin-bottom: 48px;
+    }
+    .filters-panel {
+        padding: 1rem;
+        border-radius: 14px;
+    }
+
+    .filters-header {
+        align-items: center;
+    }
+
+    .filters-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filters-actions {
+        justify-content: stretch;
+    }
+
+    .filters-actions button {
+        width: 100%;
     }
 }
 
