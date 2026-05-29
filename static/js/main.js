@@ -11,6 +11,10 @@ const MESSAGES = [
 
 // ================ ELEMENTS ================
 const elements = {
+    balanceTxt: document.querySelector('#balance-txt'),
+    expenseTxt: document.querySelector('#expense-txt'),
+    incomeTxt: document.querySelector('#income-txt'),
+
     form: document.querySelector('#transactionForm'),
     titleForm: document.querySelector('#create-transaction > div.section-header > div > h2'),
     btnSubmit: document.querySelector('#submit-form'),
@@ -45,12 +49,44 @@ const elements = {
     timer: null,
     countTransaction: 0,
 
-    // Lista original usada pelos filtros
     transactions: []
 };
 
 
 // ================ FUNCTIONS ================
+function parseAmount(value) {
+    return Number(String(value).replace(",", "."));
+}
+
+function formatMoney(value) {
+    return `€ ${value.toFixed(2).replace(".", ",")}`;
+}
+
+function updateSummary() {
+    const summary = elements.transactions.reduce((acc, transaction) => {
+        const amount = parseAmount(transaction.amount);
+
+        if (transaction.type === "receita") {
+            acc.income += amount;
+        }
+
+        if (transaction.type === "despesa") {
+            acc.expense += amount;
+        }
+
+        return acc;
+    }, {
+        income: 0,
+        expense: 0
+    });
+
+    const balance = summary.income - summary.expense;
+
+    elements.incomeTxt.innerText = formatMoney(summary.income);
+    elements.expenseTxt.innerText = formatMoney(summary.expense);
+    elements.balanceTxt.innerText = formatMoney(balance);
+}
+
 function initTimeout() {
     clearTimeout(elements.timer);
 
@@ -166,6 +202,8 @@ function clearTransactionsList() {
 
 function renderTransactions(transactions) {
     clearTransactionsList();
+
+    updateSummary()
 
     if (!Array.isArray(transactions) || transactions.length === 0) {
         elements.transactionsList.innerHTML = '<p class="empty-transactions">Nenhuma transação encontrada.</p>';
@@ -309,11 +347,14 @@ async function showTransactions() {
 
             renderTransactions(elements.transactions);
         } else {
-            emptyList();
+            elements.transactions = [];
+            renderTransactions(elements.transactions);
         }
     } else {
         emptyList();
         if (response.message) showInform(response.message, false, true);
+        elements.transactions = [];
+        updateSummary();
     }
 }
 
@@ -376,7 +417,6 @@ function updateOne() {
 
     document.querySelector('#create-transaction').scrollIntoView({ behavior: 'smooth' });
 }
-
 
 // ================ EVENTS ================
 elements.form.addEventListener("submit", saveForm);
