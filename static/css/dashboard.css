@@ -48,9 +48,19 @@
     margin-bottom: 20px;
 }
 
-.chart-box canvas {
+.chart-canvas {
+    position: relative;
     width: 100%;
-    min-height: 240px;
+    height: 280px;
+    max-height: 280px;
+    overflow: hidden;
+}
+
+.chart-box canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+    max-height: 280px;
 }
 
 @media screen and (max-width: 900px) {
@@ -75,6 +85,15 @@
     .chart-box {
         padding: 18px;
         min-height: 280px;
+    }
+
+    .chart-canvas {
+        height: 240px;
+        max-height: 240px;
+    }
+
+    .chart-box canvas {
+        max-height: 240px;
     }
 }
 
